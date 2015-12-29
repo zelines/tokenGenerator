@@ -26,7 +26,7 @@ import javax.crypto.SecretKey;
 public class GenerateToken extends AppCompatActivity {
     EditText console;
     TextView console2;
-
+    String s=null;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -38,7 +38,7 @@ public class GenerateToken extends AppCompatActivity {
     public void genToken(View view) {
 
         //generateSecToken
-        String s = genarateSecToken();
+        s = genarateSecToken();
             console.setText(s);
         //Signtoken
 
@@ -47,7 +47,7 @@ public class GenerateToken extends AppCompatActivity {
 
     public static String genarateSecToken(){
       //  SecretKey secretKey;
-        String s=null;
+        String secret=null;
        /* SecureRandom random = new SecureRandom();
         return new BigInteger(256, random).toString(32);
         */
@@ -69,8 +69,8 @@ public class GenerateToken extends AppCompatActivity {
         } catch (NoSuchAlgorithmException e) {
             e.printStackTrace();
         }*/
-        if (key != null) {s = Base64.encodeToString(key.getEncoded(), Base64.DEFAULT);}
-        return s;
+        if (key != null) {secret = Base64.encodeToString(key.getEncoded(), Base64.DEFAULT);}
+        return secret;
     }
 
 //////////////////////////////////////sign///////////////////////////////
@@ -83,8 +83,8 @@ public class GenerateToken extends AppCompatActivity {
         String pub = getPublicKeyBase64Str(rsaKyePair);
 
        console2.setText(pri);
-        String mySignature = getDigitalSignature("olaola",rsaKyePair);
-       if(verfiySignature(mySignature,"olaola",rsaKyePair)){
+        String mySignature = getDigitalSignature(s,rsaKyePair);
+       if(verfiySignature(mySignature,s,rsaKyePair)){
            console2.setText("verifica");
        }
 
