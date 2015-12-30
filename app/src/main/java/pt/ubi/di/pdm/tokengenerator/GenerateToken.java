@@ -140,7 +140,7 @@ public class GenerateToken extends AppCompatActivity {
             byte[] data = text.getBytes("UTF8");
 
             // signature
-            Signature sig = Signature.getInstance("MD5WithRSA");
+            Signature sig = Signature.getInstance("SHA1withRSA");
             sig.initSign(pk);
 
             sig.update(data);
@@ -191,7 +191,7 @@ public class GenerateToken extends AppCompatActivity {
             //byte[] signatureBytes = signature.getBytes("UTF8");
             byte[] signatureBytes =Base64.decode(signature,Base64.DEFAULT);
 
-            Signature sig = Signature.getInstance("MD5WithRSA");
+            Signature sig = Signature.getInstance("SHA1withRSA");
             sig.initVerify(pk);
             sig.update(originalBytes);
 
