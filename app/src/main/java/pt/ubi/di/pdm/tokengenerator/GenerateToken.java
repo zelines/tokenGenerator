@@ -7,6 +7,7 @@ import android.view.View;
 import android.widget.EditText;
 import android.widget.TextView;
 
+import java.io.UnsupportedEncodingException;
 import java.security.GeneralSecurityException;
 import java.security.KeyFactory;
 import java.security.KeyPair;
@@ -35,6 +36,7 @@ public class GenerateToken extends AppCompatActivity {
         console2=(TextView)findViewById(R.id.console2Tv);
     }
 
+/////////////////////////////generate token ////////
     public void genToken(View view) {
 
         //generateSecToken
@@ -73,18 +75,20 @@ public class GenerateToken extends AppCompatActivity {
         return secret;
     }
 
-//////////////////////////////////////sign///////////////////////////////
+
+//////////////////////////////////////sign token///////////////////////////////////////
     public void signToken(View view) {
         // Get keys pair (RSA)
         KeyPair rsaKyePair = createKeyPair();
 
-// Get private/ public keys and store them in DB
-        String pri = getPrivateKeyBase64Str(rsaKyePair);
-        String pub = getPublicKeyBase64Str(rsaKyePair);
 
-       console2.setText(pri);
-        String mySignature = getDigitalSignature(s,rsaKyePair);
-       if(verfiySignature(mySignature,s,rsaKyePair)){
+        String pri = Base64.encodeToString(rsaKyePair.getPrivate().getEncoded(), Base64.DEFAULT);
+        String pub = Base64.encodeToString(rsaKyePair.getPublic().getEncoded(), Base64.DEFAULT);
+
+      // console2.setText(pri);
+        String mySignature = getDigitalSignature(s,pri);
+
+       if(verfiySignature(mySignature,s,pub)){
            console2.setText("verifica");
        }
 
@@ -121,12 +125,12 @@ public class GenerateToken extends AppCompatActivity {
     }
 
 
-    public String getDigitalSignature(String text, KeyPair strPrivateKey)  {
+    public String getDigitalSignature(String text, String strPrivateKey)  {
 
         try {
 
             // Get private key from String
-          //  PrivateKey pk = loadPrivateKey(strPrivateKey);
+            PrivateKey pk = loadPrivateKey(strPrivateKey);
            /* if(pk != null){
              //   console2.setText(pk.getEncoded().toString());
             }*/
@@ -137,7 +141,7 @@ public class GenerateToken extends AppCompatActivity {
 
             // signature
             Signature sig = Signature.getInstance("MD5WithRSA");
-            sig.initSign(strPrivateKey.getPrivate());
+            sig.initSign(pk);
 
             sig.update(data);
             byte[] signatureBytes = sig.sign();
@@ -156,7 +160,12 @@ public class GenerateToken extends AppCompatActivity {
 
 
     private PrivateKey loadPrivateKey(String key64) throws GeneralSecurityException {
-        byte[] clear = Base64.decode(key64, Base64.DEFAULT);
+        byte[] clear = new byte[0];
+        try {
+            clear = Base64.decode(key64.getBytes("utf-8"), Base64.DEFAULT);
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
         PKCS8EncodedKeySpec keySpec = new PKCS8EncodedKeySpec(clear);
         KeyFactory fact = KeyFactory.getInstance("RSA");
         PrivateKey priv = fact.generatePrivate(keySpec);
@@ -165,15 +174,15 @@ public class GenerateToken extends AppCompatActivity {
     }
 
 
-   //////////////// verifySign////////////
+   ////////////////////////////////////////////////////////// verifySign////////////
 
 
-    public static boolean verfiySignature(String signature, String original, KeyPair publicKey){
+    public static boolean verfiySignature(String signature, String original, String publicKey){
 
         try{
 
             // Get private key from String
-           // PublicKey pk = loadPublicKey(publicKey);
+           PublicKey pk = loadPublicKey(publicKey);
 
             // text to bytes
             byte[] originalBytes = original.getBytes("UTF8");
@@ -183,7 +192,7 @@ public class GenerateToken extends AppCompatActivity {
             byte[] signatureBytes =Base64.decode(signature,Base64.DEFAULT);
 
             Signature sig = Signature.getInstance("MD5WithRSA");
-            sig.initVerify(publicKey.getPublic());
+            sig.initVerify(pk);
             sig.update(originalBytes);
 
             return sig.verify(signatureBytes);
@@ -199,7 +208,12 @@ public class GenerateToken extends AppCompatActivity {
 
 
     private static PublicKey loadPublicKey(String key64) throws GeneralSecurityException {
-        byte[] data = Base64.decode(key64,Base64.DEFAULT);
+        byte[] data = new byte[0];
+        try {
+            data = Base64.decode(key64.getBytes("utf-8"), Base64.DEFAULT);
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
         X509EncodedKeySpec spec = new X509EncodedKeySpec(data);
         KeyFactory fact = KeyFactory.getInstance("RSA");
         return fact.generatePublic(spec);
